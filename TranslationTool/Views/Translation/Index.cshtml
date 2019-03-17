@@ -1,0 +1,73 @@
+﻿@model TranslationTool.Models.Translation
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<link href="~/Content/styles.css" rel="stylesheet" />
+@using (Html.BeginForm("Final", "Translation"))
+{
+    <div class="border-color">
+        <div class="serbian-translate">
+            <form >
+                @Html.TextBoxFor(m => m.SerbianTranslation, new { id = "serbianTranslation" })
+            </form>
+        </div>
+        <p>
+            Translated text is:
+        </p>
+        <div id="lblMessage"></div>
+
+        @Html.HiddenFor(m => m.EnglishTranslation, new { id = "EnglishTranslation" })
+        <br />
+
+        <button type="submit" class="orange">Ok - continue</button>
+    </div>
+}
+
+@section Scripts {
+<script src="~/Scripts/jquery.min.js"></script>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+
+    //setup before functions
+    var typingTimer;                //timer identifier
+    var doneTypingInterval = 1500;  //time in ms, 3 second 
+    var $input = $('#serbianTranslation');
+
+    //on keyup, start the countdown
+    $input.on('keyup', function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(doneTyping, doneTypingInterval);
+    });
+
+    //on keydown, clear the countdown 
+    $input.on('keydown', function () {
+        clearTimeout(typingTimer);
+    });
+
+    //user is "finished typing," do something
+    function doneTyping() {
+        //debugging;
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("Translate")',
+            data: { 'SerbianTranslation': $('#serbianTranslation').val() },
+            datatype: 'json',
+            cache: false
+        })
+        .success(function (data) {
+            $('#lblMessage').html(data.StringValue);
+            $('#EnglishTranslation').val(data.EnglishTranslation);
+        })
+        .error(function (xhr, ajaxOptions, thrownError) {
+            $('#lblMessage').html("There was an error");
+        });
+        return false;
+    }
+
+       
+
+</script>
+    @Scripts.Render("~/bundles/jqueryval")
+}
